@@ -1,8 +1,8 @@
 ---
 layout: post
 title:  "Analyse der vorhandenen Online Geo-Editoren"
-description: ""
 categories: milestone1
+author: Adrian
 ---
 
 Als Vorbereitung auf die Entwicklung des Geo-Editors habe ich mir

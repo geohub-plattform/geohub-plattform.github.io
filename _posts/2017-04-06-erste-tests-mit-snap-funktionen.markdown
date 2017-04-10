@@ -1,7 +1,6 @@
 ---
 layout: post
 title:  "Erste Tests mit Snap-Funktionen"
-excerpt: "Kurzbeschreibung"
 categories: milestone1
 author: Adrian
 ---
