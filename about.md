@@ -15,4 +15,6 @@ Ingeborg-Bachmann-Str. 13<br>
 
 E-Mail: as<!--spam-->(at)<!--spam-->nitegate(punkt)de
 
+Map Icon von [Korawan M](https://www.iconfinder.com/korawan_m), [CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/)
+
 [prototypefund]: https://www.prototypefund.de
