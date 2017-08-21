@@ -26,16 +26,14 @@ var eventBux = require("eventbusjs");
 var selectStore = require("./src/select_store");
 
 var defaultOptions = {
+  baseDir: "",
   snapToFeatures: true,
   routing: true
 };
 
-var setupGeoHub = function setupGeoHub() {
-  var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : defaultOptions;
-  var api = arguments[1];
-
+var setupGeoHub = function setupGeoHub(options, api) {
   var ctx = {
-    options: options
+    options: Object.assign({}, defaultOptions, options)
   };
   ctx.api = api;
   ctx.internalApi = {};
@@ -52,10 +50,10 @@ var setupGeoHub = function setupGeoHub() {
 
   api.onAdd = function (map) {
     console.log("onAdd");
-    map.loadImage("../dist/ic_edit_location_black_24dp_1x.png", function (error, image) {
+    map.loadImage(ctx.options.baseDir + "ic_edit_location_black_24dp_1x.png", function (error, image) {
       map.addImage("location", image);
     });
-    map.loadImage("../dist/arrow_color.png", function (error, image) {
+    map.loadImage(ctx.options.baseDir + "arrow_color.png", function (error, image) {
       map.addImage("arrow", image);
     });
     ctx.map = map;
@@ -35164,7 +35162,7 @@ var turf = require("@turf/turf");
 function loadData(query, success) {
   var xhr = new XMLHttpRequest();
   console.log("Query data: ", query);
-  xhr.open('GET', "http://overpass-api.de/api/interpreter?data=" + query, true);
+  xhr.open('GET', "//overpass-api.de/api/interpreter?data=" + query, true);
   xhr.onreadystatechange = function (e) {
     if (xhr.readyState === 4) {
       if (xhr.status === 200) {
