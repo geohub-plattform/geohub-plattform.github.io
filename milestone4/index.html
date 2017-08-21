@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>GeoHub Online Editor</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src='https://api.mapbox.com/mapbox-gl-js/v0.37.0/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v0.37.0/mapbox-gl.css' rel='stylesheet'/>
+    <link href='geohub-client.css' rel='stylesheet'/>
+    <script src='geohub-client.js'></script>
+    <script src='https://code.jquery.com/jquery-3.2.1.js'></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #nav {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 4rem;
+            width: 100%;
+            background: white;
+            box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+            z-index: 9999;
+        }
+
+        #nav .link {
+            position: relative;
+            height: 4rem;
+            font-size: 16px;
+            font-family: monospace;
+            line-height: 4rem;
+            text-transform: uppercase;
+            float: left;
+            padding: 0 0.5rem;
+            color: black;
+            text-decoration: none;
+        }
+
+        #nav .link.title {
+            font-size: 30px !important;
+        }
+
+        #nav .separator {
+            float: left;
+            border-left: 2px solid grey;
+            padding: 0;
+            height: 4rem;
+            margin: 0 0.5rem;
+            line-height: 4rem;
+
+        }
+
+        .dragover {
+            border-top: 3px dashed blue;
+        }
+
+        #loading {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9998;
+            text-align: center;
+            vertical-align: center;
+            background-size: cover;
+            background-color: white;
+        }
+
+        .spinner {
+            margin: 400px auto 0;
+            left: calc(50% - 35%);
+            width: 70px;
+            text-align: center;
+        }
+
+        .spinner > div {
+            width: 18px;
+            height: 18px;
+            background-color: rgba(0, 0, 0, 0.4);
+
+            border-radius: 100%;
+            display: inline-block;
+            -webkit-animation: sk-bouncedelay 1s infinite ease-in-out both;
+            animation: sk-bouncedelay 1s infinite ease-in-out both;
+        }
+
+        .spinner .bounce1 {
+            -webkit-animation-delay: -0.24s;
+            animation-delay: -0.24s;
+        }
+
+        .spinner .bounce2 {
+            -webkit-animation-delay: -0.12s;
+            animation-delay: -0.12s;
+        }
+
+        @-webkit-keyframes sk-bouncedelay {
+            0%,
+            80%,
+            100% {
+                -webkit-transform: scale(0)
+            }
+            40% {
+                -webkit-transform: scale(1.0)
+            }
+        }
+
+        @keyframes sk-bouncedelay {
+            0%,
+            80%,
+            100% {
+                -webkit-transform: scale(0);
+                transform: scale(0);
+            }
+            40% {
+                -webkit-transform: scale(1.0);
+                transform: scale(1.0);
+            }
+        }
+
+        #map {
+            position: absolute;
+            top: 4rem;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+        }
+
+        #editor {
+            position: absolute;
+            top: 4rem;
+            bottom: 0;
+            right: 0;
+            width: 0%;
+            height: calc(100% - 4rem);
+            overflow-y: scroll;
+        }
+
+        .zoom-container {
+            position: fixed;
+            left: 8px;
+            top: 8px;
+            font-family: "Helvetica Neue Light", "HelveticaNeue-Light", "Helvetica Neue", Calibri, Helvetica, Arial;
+            font-size: small;
+        }
+
+        .mapboxgl-map.mouse-add .mapboxgl-canvas-container.mapboxgl-interactive {
+            cursor: crosshair;
+        }
+    </style>
+</head>
+
+<body>
+<div id="nav">
+    <a class="link" href="#"><img src="https://avatars6.githubusercontent.com/u/26528000?v=4&s=56" alt=""></a>
+    <a class="link title" href="#">GeoHub Client</a>
+    <a class="separator"></a>
+    <a class="link" href="https://github.com/geohub-plattform/geohub-client">Github</a>
+    <a class="link" href="https://geohub-plattform.github.io/">Blog</a>
+</div>
+<div id="loading">
+    <div class="spinner">
+        <div class="bounce1"></div>
+        <div class="bounce2"></div>
+        <div class="bounce3"></div>
+    </div>
+</div>
+<div id="map"></div>
+<div id="editor">
+    <h2>Property Editor</h2>
+    <h4 id="data-counter"></h4>
+    <div id="data-editor"></div>
+</div>
+<script>
+    mapboxgl.accessToken = 'pk.eyJ1Ijoibml0ZWdhdGUiLCJhIjoiY2l4ejFxc2d6MDA1aDJxbzc5bjZrMzI0ZyJ9.EEPEOLNhdFz9DVNx4TCvBw';
+
+    var interval = setInterval(function () {
+        if (document.readyState === "complete") {
+            clearInterval(interval);
+            $('#loading').fadeOut(300);
+        }
+    }, 500);
+    var map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/streets-v8',
+        center: [9.21958, 49.145077],
+        zoom: 17,
+        maxZoom: 20
+    });
+
+    map.on("load", function () {
+        var geoHubClient = new GeoHubClient();
+        map.addControl(geoHubClient);
+        map.addControl(new mapboxgl.GeolocateControl());
+        map.addControl(new mapboxgl.ScaleControl());
+        map.addControl(new mapboxgl.FullscreenControl());
+        geoHubClient.downloadWays();
+    });
+</script>
+</body>
+
+</html>
